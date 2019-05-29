@@ -60,6 +60,14 @@ exports.addToCart = (req, res, next) => {
   res.redirect('/cart');
 }
 
+exports.deleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
+  Product.findById(prodId, prod => {
+    Cart.deleteProduct(prod.id, prod.price);
+    res.redirect('/cart');
+  });
+}
+
 exports.getCheckout = (req, res, next) => {
   res.render('shop/checkout', {
     pageTitle: 'Checkout',
