@@ -3,7 +3,6 @@ const Product = require('../models/product');
 exports.getProducts = (req, res, next) => {
   Product.findAll()
     .then(prods => {
-      console.log(prods);
       res.render('shop/product-list', {
         pageTitle: "All Products",
         prods,
@@ -29,7 +28,6 @@ exports.getProduct = (req, res, next) => {
 exports.getIndex = (req, res, next) => {
   Product.findAll()
   .then(prods => {
-    console.log(prods);
     res.render('shop/product-list', {
       pageTitle: "All Products",
       prods,
@@ -120,7 +118,6 @@ exports.postOrders = (req, res, next) => {
       return cart.getProducts();
     })
     .then(products => {
-      console.log(products);
       return req.user.createOrder()
         .then(order => {
           return order.addProducts(products.map(product => {
@@ -140,7 +137,7 @@ exports.postOrders = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-  req.user.getOrders()
+  req.user.getOrders({include: ['products']})
     .then(orders => {
       res.render('shop/orders', {
         pageTitle: 'Your Orders',
@@ -149,9 +146,4 @@ exports.getOrders = (req, res, next) => {
       });
     })
     .catch(err => console.log(err));
-
-  res.render('shop/orders', {
-    pageTitle: 'Your Orders',
-    path: '/orders'
-  });
-}
+};
