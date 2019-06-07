@@ -19,13 +19,23 @@ module.exports = class Product {
       });
   }
 
+  static fetchAll() {
+    const db = getDb();
+    return db.collection('products')
+      .find()
+      .toArray()
+      .then(products => {
+        return products;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
   // static deleteById(id) {
 
   // }
 
-  // static fetchAll(cb) {
-
-  // }
 
   // static findById(id, cb) {
 
