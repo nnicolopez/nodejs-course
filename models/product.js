@@ -59,12 +59,10 @@ module.exports = class Product {
 
   static findById(id) {
     const db = getDb();
-    console.log(id);
     return db.collection('products')
       .find({ _id: mongodb.ObjectId(id) })
       .next()
       .then(product => {
-        console.log('product: ', product);
         return product;
       })
       .catch(err => {

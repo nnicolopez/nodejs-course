@@ -58,7 +58,6 @@ exports.postEditProduct = (req, res, next) => {
   );
   product.save()
     .then(result => {
-      console.log('UDPDATED PRODUCT');
       res.redirect('/admin/products');
     })
     .catch(err => {
