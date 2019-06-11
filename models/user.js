@@ -16,6 +16,11 @@ class User {
     return db.collection('users').insertOne(this)
   }
 
+  static findById(id) {
+    const db = getDb();
+    return db.collection('users').findOne({_id: ObjectId(id)});
+  }
+
   addToCart(product) {
     const db = getDb();
     const cartProductIndex = this.cart.items.findIndex(cartItem => {
@@ -69,9 +74,35 @@ class User {
       });
   }
 
-  static findById(id) {
+  addOrder() {
     const db = getDb();
-    return db.collection('users').findOne({_id: ObjectId(id)});
+    return this.getCart()
+      .then(products => {
+        const order = {
+          items: products,
+          user: {
+            _id: this._id,
+            username: this.username
+          }
+        };
+        return db.collection('orders').insertOne(order);
+      })
+      .then(result => {
+        this.cart = {items: []};
+        return db.collection('users')
+          .updateOne(
+            {_id: this._id},
+            {$set: {cart: {items: []}}}
+          );
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  getOrders() {
+    const db = getDb();
+    return db.collection('orders').find({'user._id': this._id}).toArray();
   }
 }
 
