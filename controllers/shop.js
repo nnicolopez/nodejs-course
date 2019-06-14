@@ -44,17 +44,22 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user.getCart()
+  req.user
+    .populate('cart.items.product')
+    .execPopulate()
+    .then(user => {
+      return user.cart.items;
+    })
     .then(products => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
         products: products
-      })
+      });
     })
     .catch(err => {
       console.log(err);
-    });
+    })
 };
 
 exports.addToCart = (req, res, next) => {

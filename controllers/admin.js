@@ -14,7 +14,9 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const { title, imgUrl, price, description } = req.body;
-  const product = new Product({title, price, description, imgUrl});
+  const product = new Product(
+    {title, price, description, imgUrl, user: req.user}
+  );
   product.save()
     .then(result => {
       res.redirect('/admin/add-product');
@@ -72,6 +74,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    .populate('user')
     .then(products => {
       res.render('admin/products', {
         pageTitle: "Admin products",
