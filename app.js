@@ -35,7 +35,6 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-// mongoose.set('useFindAndModify', false);
 mongoose.connect(uri, { useNewUrlParser: true })
   .then(() => {
     User.findOne()

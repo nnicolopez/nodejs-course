@@ -22,6 +22,19 @@ const userSchema = new Schema({
         quantity: {type: Number, required: true}
       }
     ]
+  },
+  orders: {
+    items: [
+      {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true
+        }, 
+        quantity: {type: Number, required: true}
+      }
+    ],
+    price: Number
   }
 });
 
@@ -54,6 +67,24 @@ userSchema.methods.removeFromCart = function(productId) {
   });
   this.cart.items = updatedCartItems;
   return this.save();
+}
+
+userSchema.methods.addOrder = function() {
+  this.populate('cart.items.product')
+    .execPopulate()
+    .then(user => {
+      let price = 0;
+      user.cart.items.forEach(item => {
+        price += item.product.price * item.quantity;
+      });
+      this.order.items = [...this.cart.items];
+      this.order.price = price;
+      this.cart.items = [];
+      return this.save();
+    })
+    .catch(err => {
+      console.log(err);
+    });
 }
 
 module.exports = mongoose.model('User', userSchema);
