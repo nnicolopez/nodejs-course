@@ -1,4 +1,6 @@
 const path = require('path');
+const uri = 'mongodb+srv://nnicolopez:eaeDQQHJb48G2TmF@cluster0-0kqee.mongodb.net/shop?retryWrites=true&w=majority'
+// const uri = 'mongodb://localhost:27017/shop';
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -33,15 +35,13 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    'mongodb+srv://maximilian:9u4biljMQc4jjqbe@cluster0-ntrwp.mongodb.net/shop?retryWrites=true'
-  )
+  .connect(uri, { useNewUrlParser: true })
   .then(result => {
     User.findOne().then(user => {
       if (!user) {
         const user = new User({
-          name: 'Max',
-          email: 'max@test.com',
+          name: 'Nico',
+          email: 'nico@test.com',
           cart: {
             items: []
           }
