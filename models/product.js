@@ -1,5 +1,5 @@
-const mongodb = require('mongodb');
-const getDb = require('../util/database').getDb;
+const { ObjectId } = require('mongodb');
+const db = require('../util/database');
 
 module.exports = class Product {
   constructor(title, imgUrl, description, price, id, userId) {
@@ -7,12 +7,11 @@ module.exports = class Product {
     this.imgUrl = imgUrl;
     this.description = description;
     this.price = price;
-    this._id = id ? mongodb.ObjectId(id) : null;
+    this._id = id ? new ObjectId(id) : null;
     this.userId = userId;
   }
 
   save() {
-    const db = getDb();
     let dbOperation;
     if (this._id) {
       dbOperation = db.collection('products').updateOne(
@@ -32,7 +31,6 @@ module.exports = class Product {
   }
 
   static fetchAll() {
-    const db = getDb();
     return db.collection('products')
       .find()
       .toArray()
@@ -45,9 +43,8 @@ module.exports = class Product {
   }
 
   static deleteById(id) {
-    const db = getDb();
     return db.collection('products')
-      .deleteOne({_id: mongodb.ObjectId(id)})
+      .deleteOne({_id: new ObjectId(id)})
       .then(result => {
         // console.log(result);
       })
@@ -58,9 +55,8 @@ module.exports = class Product {
 
 
   static findById(id) {
-    const db = getDb();
     return db.collection('products')
-      .find({ _id: mongodb.ObjectId(id) })
+      .find({ _id: new ObjectId(id) })
       .next()
       .then(product => {
         return product;

@@ -1,28 +1,13 @@
-const mongodb = require('mongodb');
-const MongoClient = mongodb.MongoClient;
-const uri = 'mongodb+srv://nnicolopez:eaeDQQHJb48G2TmF@cluster0-0kqee.mongodb.net/shop?retryWrites=true&w=majority'
-// const uri = 'mongodb://localhost:27017/shop';
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
-let _db;
+const uri = "mongodb+srv://nnicolopez:Ri8fbF.6sYSv9.T@nodejs-course.mwzwalm.mongodb.net/?retryWrites=true&w=majority";
 
-const mongoConnect = (callback) => {
-  MongoClient.connect(uri, { useNewUrlParser: true })
-    .then(client => {
-      _db = client.db();
-      callback();
-    })
-    .catch(err => {
-      console.log(err);
-      throw err;
-    });
-}
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-const getDb = () => {
-  if (_db) {
-    return _db
-  }
-  throw 'No database found!';
-}
+client.connect(err => {
+  const collection = client.db("test").collection("devices");
+  // perform actions on the collection object
+  client.close();
+});
 
-exports.mongoConnect = mongoConnect;
-exports.getDb = getDb;
+module.exports = client.db("nodejs-course");

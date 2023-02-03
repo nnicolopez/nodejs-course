@@ -1,5 +1,5 @@
 const mongodb = require('mongodb');
-const getDb = require('../util/database').getDb;
+const db = require('../util/database');
 
 const ObjectId = mongodb.ObjectId;
 
@@ -8,22 +8,20 @@ class User {
     this.username = username;
     this.email = email;
     this.cart = cart;
-    this._id = ObjectId(id);
+    this._id = id ? new ObjectId(id) : null;
   }
 
   save() {
-    const db = getDb();
     return db.collection('users').insertOne(this)
   }
 
   static findById(id) {
-    const db = getDb();
-    return db.collection('users').findOne({_id: ObjectId(id)});
+    return db.collection('users').findOne({_id: new ObjectId(id)});
   }
 
   addToCart(product) {
-    const db = getDb();
     const cartProductIndex = this.cart.items.findIndex(cartItem => {
+      console.log(cartItem.productId, product._id, cartItem.productId === product._id)
       return cartItem.productId.toString() === product._id.toString();
     });
     let newQuantity = 1;
@@ -44,7 +42,6 @@ class User {
   }
 
   removeFromCart(prodId) {
-    const db = getDb();
     const updatedCartItems = this.cart.items.filter(item => {
       return item.productId.toString() !== prodId.toString();
     });
@@ -55,7 +52,6 @@ class User {
   }
 
   getCart() {
-    const db = getDb();
     const productIds = this.cart.items.map(item => item.productId);
     return db.collection('products').find({_id: {$in: productIds}})
       .toArray()
@@ -75,7 +71,6 @@ class User {
   }
 
   addOrder() {
-    const db = getDb();
     return this.getCart()
       .then(products => {
         const order = {
@@ -101,7 +96,6 @@ class User {
   }
 
   getOrders() {
-    const db = getDb();
     return db.collection('orders').find({'user._id': this._id}).toArray();
   }
 }
