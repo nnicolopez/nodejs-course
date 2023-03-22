@@ -1,7 +1,8 @@
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
       res.render('shop/product-list', {
         pageTitle: "All Products",
@@ -30,7 +31,7 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
       res.render('shop/index', {
         pageTitle: "Shop",
@@ -44,12 +45,13 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user.getCart()
-    .then(products => {
+  req.user
+    .populate('cart.items.product')
+    .then(user => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
-        products: products
+        products: user.cart.items
       })
     })
     .catch(err => {
@@ -71,7 +73,7 @@ exports.addToCart = (req, res, next) => {
     });
 }
 
-exports.deleteProduct = (req, res, next) => {
+exports.removeFromCart = (req, res, next) => {
   const prodId = req.body.productId;
   req.user.removeFromCart(prodId)
     .then(result => {
@@ -90,8 +92,9 @@ exports.getCheckout = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-  req.user.getOrders()
+  Order.find({'user.userId': req.user._id})
     .then(orders => {
+      console.log(JSON.stringify(orders))
       res.render('shop/orders', {
         pageTitle: 'Your Orders',
         path: '/orders',
@@ -104,11 +107,30 @@ exports.getOrders = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
-  req.user.addOrder()
-    .then(result => {
+  req.user
+    .populate('cart.items.product')
+    .then(user => {
+      const order = new Order({
+        user: {
+          name : req.user.name,
+          userId: req.user
+        },
+        products: user.cart.items.map((productData) => {
+          return {
+            product: {...productData.product._doc},
+            quantity: productData.quantity
+          }
+        })
+      })
+      return order.save()
+    })
+    .then(() => {
+      return req.user.clearCart();
+    })
+    .then(() => {
       res.redirect('/orders');
     })
     .catch(err => {
       console.log(err);
-    })
+    });
 };
