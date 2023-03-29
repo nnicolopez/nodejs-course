@@ -2,22 +2,35 @@ const path = require('path');
 const mongoose = require('mongoose')
 const express = require('express');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
+const MONGODB_URI = 'mongodb+srv://nnicolopez:Ri8fbF.6sYSv9.T@nodejs-course.mwzwalm.mongodb.net/nodejs-course?retryWrites=true&w=majority';
+
 const app = express();
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: 'sessions'
+});
 
 app.set('view engine', 'ejs');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({secret: 'long_string_value', resave: false, saveUninitialized: false, store: store}))
 
 app.use((req, res, next) => {
-  User.findById('63e42929711520f2e6e74010')
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then(user => {
       req.user = user;
       next();
@@ -29,10 +42,11 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 
-mongoose.connect('mongodb+srv://nnicolopez:Ri8fbF.6sYSv9.T@nodejs-course.mwzwalm.mongodb.net/nodejs-course?retryWrites=true&w=majority')
+mongoose.connect(MONGODB_URI)
   .then(() => {
     User.findOne().then(user => {
       if (!user) {
